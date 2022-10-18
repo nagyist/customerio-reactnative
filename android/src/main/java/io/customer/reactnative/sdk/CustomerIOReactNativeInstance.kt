@@ -7,40 +7,14 @@ import io.customer.messagingpush.MessagingPushModuleConfig
 import io.customer.messagingpush.ModuleMessagingPushFCM
 import io.customer.reactnative.sdk.constant.Keys
 import io.customer.reactnative.sdk.extension.*
-import io.customer.reactnative.sdk.storage.PreferencesStorage
-import io.customer.reactnative.sdk.util.ReactNativeConsoleLogger
 import io.customer.sdk.CustomerIO
 import io.customer.sdk.data.store.Client
-import io.customer.sdk.util.CioLogLevel
-import io.customer.sdk.util.Logger
 
 /**
  * Static property holder for ReactNative package to overcome SDK
  * initialization challenges
  */
 object CustomerIOReactNativeInstance {
-    internal val logger: Logger = ReactNativeConsoleLogger(CioLogLevel.ERROR)
-
-    fun setReactNativeLogLevel(logLevel: CioLogLevel) {
-        (logger as ReactNativeConsoleLogger).logLevel = logLevel
-    }
-
-    internal fun initializeSDKFromContext(context: Context) {
-        if (CustomerIO.instanceOrNull() != null) return
-
-        try {
-            val preferencesStorage = PreferencesStorage(context = context)
-            initialize(
-                context = context,
-                environment = preferencesStorage.loadEnvironmentSettings(),
-                configuration = preferencesStorage.loadConfigurationSettings(),
-                sdkVersion = preferencesStorage.loadSDKVersion(),
-            )
-            logger.info("Customer.io instance initialized successfully from preferences")
-        } catch (ex: Exception) {
-            logger.error("Failed to initialize Customer.io instance from preferences, ${ex.message}")
-        }
-    }
 
     @Throws(IllegalArgumentException::class)
     internal fun initialize(
@@ -77,7 +51,6 @@ object CustomerIOReactNativeInstance {
         if (config == null) return this
 
         val logLevel = config.getProperty<Double>(Keys.Config.LOG_LEVEL).toCIOLogLevel()
-        setReactNativeLogLevel(logLevel = logLevel)
         setLogLevel(level = logLevel)
         config.getProperty<String>(Keys.Config.TRACKING_API_URL)?.takeIfNotBlank()?.let { value ->
             setTrackingApiURL(value)
